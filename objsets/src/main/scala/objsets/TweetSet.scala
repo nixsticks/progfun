@@ -77,12 +77,7 @@ abstract class TweetSet extends TweetSetInterface {
    * Question: Should we implement this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  def descendingByRetweet: TweetList = this match {
-    case _: Empty => Nil
-    case _ =>
-      val t = mostRetweeted
-      new Cons(t, remove(t).descendingByRetweet)
-  }
+  def descendingByRetweet: TweetList
 
   /**
    * The following methods are already implemented
@@ -130,6 +125,8 @@ class Empty extends TweetSet {
   def union(that: TweetSet): TweetSet = that
 
   def mostRetweeted: Tweet = throw new java.util.NoSuchElementException("Empty set")
+
+  def descendingByRetweet: TweetList = Nil
 }
 
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
@@ -171,6 +168,11 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
   def mostRetweeted: Tweet = filterAcc(t => t.retweets > elem.retweets) match {
     case _: Empty => elem
     case set => set.mostRetweeted
+  }
+
+  def descendingByRetweet: TweetList = {
+    val t = mostRetweeted
+    new Cons(t, remove(t).descendingByRetweet)
   }
 }
 
