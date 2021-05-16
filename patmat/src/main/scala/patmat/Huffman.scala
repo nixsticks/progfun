@@ -220,9 +220,12 @@ trait Huffman extends HuffmanInterface {
    * sub-trees, think of how to build the code table for the entire tree.
    */
   def convert(tree: CodeTree): CodeTable = {
-    def loop(subtree: CodeTree, acc: CodeTable): CodeTable = subtree match {
-      case l: Leaf =>
+    def loop(subtree: CodeTree, acc: CodeTable = List()): CodeTable = subtree match {
+      case l: Leaf => (l.char, encode(tree)(List(l.char))) :: acc
+      case f: Fork => mergeCodeTables(loop(f.left, acc), loop(f.right, acc))
     }
+
+    loop(tree)
   }
 
   /**
@@ -230,7 +233,7 @@ trait Huffman extends HuffmanInterface {
    * use it in the `convert` method above, this merge method might also do some transformations
    * on the two parameter code tables.
    */
-  def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = a :: b
+  def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = a ::: b
 
   /**
    * This function encodes `text` according to the code tree `tree`.
@@ -240,15 +243,8 @@ trait Huffman extends HuffmanInterface {
    */
   def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = {
     val codeTable = convert(tree)
-    text.foldLeft(List[Bit]())((bits, char) => codeBits(codeTable)(char) :: bits).reverse
+    text.foldLeft(List[Bit]())((bits, char) => bits ::: codeBits(codeTable)(char))
   }
 }
 
-object Huffman extends Huffman {
-  def main(args: Array[String]): Unit = {
-    val decoded = Huffman.decodedSecret
-    println(decoded.toString())
-    println(encode(Huffman.frenchCode)(decoded))
-    println(secret.toString())
-  }
-}
+object Huffman extends Huffman
