@@ -73,6 +73,7 @@ trait Huffman extends HuffmanInterface {
    *   }
    */
   def times(chars: List[Char]): List[(Char, Int)] = {
+    @tailrec
     def uniq(chars: List[Char], seen: List[Char] = List()): List[Char] = chars match {
       case Nil => seen
       case char :: tail => if (seen.contains(char)) uniq(tail, seen) else uniq(tail, char :: seen)
