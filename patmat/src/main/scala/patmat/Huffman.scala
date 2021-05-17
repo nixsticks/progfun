@@ -75,11 +75,10 @@ trait Huffman extends HuffmanInterface {
   def times(chars: List[Char]): List[(Char, Int)] = {
     def uniq(chars: List[Char], seen: List[Char] = List()): List[Char] = chars match {
       case Nil => seen
-      case char :: Nil => char :: seen
-      case char :: tail => if (seen.contains(char)) uniq(tail, seen) else char :: uniq(tail, seen)
+      case char :: tail => if (seen.contains(char)) uniq(tail, seen) else uniq(tail, char :: seen)
     }
 
-    chars.foldLeft(uniq(chars).map(char => (char, 1)))((acc, char) => acc.map(
+    chars.foldLeft(uniq(chars).map(char => (char, 0)))((acc, char) => acc.map(
       pair => if (pair._1  == char) (pair._1, pair._2 + 1) else pair))
   }
 
@@ -96,7 +95,10 @@ trait Huffman extends HuffmanInterface {
   /**
    * Checks whether the list `trees` contains only one single code tree.
    */
-  def singleton(trees: List[CodeTree]): Boolean = trees.length < 2
+  def singleton(trees: List[CodeTree]): Boolean = trees match {
+    case _ :: Nil => true
+    case _ => false
+  }
 
   def insertOrdered(tree: CodeTree, trees: List[CodeTree]): List[CodeTree] =
     trees.foldLeft(List[CodeTree]()) {
@@ -116,7 +118,7 @@ trait Huffman extends HuffmanInterface {
    * unchanged.
    */
   def combine(trees: List[CodeTree]): List[CodeTree] = trees match {
-    case l1 :: l2 :: tail => insertOrdered(makeCodeTree(l1, l2), tail)
+    case l1 :: l2 :: tail => (makeCodeTree(l1, l2) :: tail).sortWith(weight(_) < weight(_))
     case _ => trees
   }
 
@@ -132,7 +134,7 @@ trait Huffman extends HuffmanInterface {
    * code trees contains only one single tree, and then return that singleton list.
    */
   def until(done: List[CodeTree] => Boolean, merge: List[CodeTree] => List[CodeTree])(trees: List[CodeTree]): List[CodeTree] =
-    if (done(trees)) trees else merge(trees)
+    if (done(trees)) trees else until(done, merge)(merge(trees))
 
   /**
    * This function creates a code tree which is optimal to encode the text `chars`.
