@@ -33,13 +33,12 @@ object Anagrams extends AnagramsInterface {
    *
    * Note: you must use `groupBy` to implement this method!
    */
-  def wordOccurrences(w: Word): Occurrences = w.toSeq.groupBy(_.toLower).foldLeft(List[(Char, Int)]())(
-    (acc, pair) => (pair._1, pair._2.length) :: acc).sortBy(_._1)
+  def wordOccurrences(w: Word): Occurrences = w.toSeq.groupBy(_.toLower).mapValues(_.length).toList.sortBy(_._1)
 
   // My entire aim with this shitty exercise is to write the most incomprehensible Scala possible, apparently
 
   /** Converts a sentence into its character occurrence list. */
-  def sentenceOccurrences(s: Sentence): Occurrences = wordOccurrences(s.reduce((w1, w2) => w1 + w2))
+  def sentenceOccurrences(s: Sentence): Occurrences = wordOccurrences(s.mkString)
 
   /** The `dictionaryByOccurrences` is a `Map` from different occurrences to a sequence of all
    * the words that have that occurrence count.
